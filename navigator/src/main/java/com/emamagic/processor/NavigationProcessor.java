@@ -2,6 +2,7 @@ package com.emamagic.processor;
 
 import com.emamagic.annotation.Page;
 import com.emamagic.annotation.Param;
+import com.emamagic.generator.NavigationGenerator;
 import com.emamagic.util.PageData;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.*;
@@ -39,57 +40,8 @@ public class NavigationProcessor extends AbstractProcessor {
             }
         }
 
-        generateNavigatorClass(pageParamMap);
+        NavigationGenerator.generateNavigatorClass(processingEnv, pageParamMap);
         return true;
     }
 
-
-    private void generateNavigatorClass(Map<String, PageData> pageParamMap) {
-        TypeSpec.Builder navigatorClass = TypeSpec.classBuilder("Navigator")
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PRIVATE)
-                        .addStatement("throw new $T($S)", RuntimeException.class, "You cannot create an instance of Navigator")
-                        .build());
-
-        for (Map.Entry<String, PageData> entry : pageParamMap.entrySet()) {
-            String pageName = entry.getKey();
-            PageData pageData = entry.getValue();
-
-            MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder("navTo" + capitalize(pageName))
-                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-
-            methodBuilder.addStatement("$T page = new $T()",
-                    ClassName.bestGuess(pageData.qualifiedName()),
-                    ClassName.bestGuess(pageData.qualifiedName()));
-
-            for (VariableElement param : pageData.params()) {
-                methodBuilder.addParameter(TypeName.get(param.asType()), param.getSimpleName().toString());
-
-                methodBuilder.addStatement("try { $T field = page.getClass().getDeclaredField($S); field.setAccessible(true); field.set(page, $L); } catch (Exception e) { throw new RuntimeException(e); }",
-                        Field.class, param.getSimpleName().toString(), param.getSimpleName().toString());
-            }
-
-            methodBuilder.addStatement("page.display()");
-            navigatorClass.addMethod(methodBuilder.build());
-        }
-
-        JavaFile javaFile = JavaFile.builder("com.emamagic.navigator", navigatorClass.build())
-                .build();
-
-        try {
-            javaFile.writeTo(processingEnv.getFiler());
-        } catch (IOException ignored) {
-            // Handle exception if necessary
-        }
-    }
-
-
-
-    private String capitalize(String input) {
-        if (input == null || input.isEmpty()) {
-            return input;
-        }
-        return input.substring(0, 1).toUpperCase() + input.substring(1);
-    }
 }

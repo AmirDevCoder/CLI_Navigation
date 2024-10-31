@@ -1,4 +1,4 @@
-package com.emamagic;
+package com.emamagic.util;
 
 public interface Navigable {
     void display();
