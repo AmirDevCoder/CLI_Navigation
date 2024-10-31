@@ -1,5 +1,6 @@
-package com.emamagic;
+package com.emamagic.test;
 
+import com.emamagic.Navigable;
 import com.emamagic.annotation.Page;
 import com.emamagic.annotation.Param;
 

@@ -8,8 +8,6 @@ import com.squareup.javapoet.*;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -28,13 +26,14 @@ public class NavigationProcessor extends AbstractProcessor {
                 TypeElement typeElement = (TypeElement) element;
                 String pageName = typeElement.getSimpleName().toString();
 
-                List<? extends Element> enclosedElements = typeElement.getEnclosedElements();
-                for (Element enclosedElement : enclosedElements) {
+                List<VariableElement> params = new ArrayList<>();
+                for (Element enclosedElement : typeElement.getEnclosedElements()) {
                     if (enclosedElement.getKind() == ElementKind.FIELD && enclosedElement.getAnnotation(Param.class) != null) {
                         VariableElement param = (VariableElement) enclosedElement;
-                        pageParamMap.computeIfAbsent(pageName, k -> new ArrayList<>()).add(param);
+                        params.add(param);
                     }
                 }
+                pageParamMap.put(pageName, params);
             }
         }
 
@@ -55,8 +54,7 @@ public class NavigationProcessor extends AbstractProcessor {
             List<VariableElement> params = entry.getValue();
 
             MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder("navTo" + capitalize(pageName))
-                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                    .addException(Exception.class);
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
             String pageClassName = "com.emamagic." + capitalize(pageName);
             methodBuilder.addStatement("$T page = new $T()", ClassName.bestGuess(pageClassName), ClassName.bestGuess(pageClassName));
@@ -64,7 +62,6 @@ public class NavigationProcessor extends AbstractProcessor {
             if (params != null && !params.isEmpty()) {
                 for (VariableElement param : params) {
                     methodBuilder.addParameter(TypeName.get(param.asType()), param.getSimpleName().toString());
-
                     methodBuilder.addStatement("try { $T field = page.getClass().getDeclaredField($S); field.setAccessible(true); field.set(page, $L); } catch (Exception e) { throw new RuntimeException(e); }",
                             Field.class, param.getSimpleName().toString(), param.getSimpleName().toString());
                 }
@@ -75,13 +72,13 @@ public class NavigationProcessor extends AbstractProcessor {
             navigatorClass.addMethod(methodBuilder.build());
         }
 
-        JavaFile javaFile = JavaFile.builder("com.emamagic", navigatorClass.build())
+        JavaFile javaFile = JavaFile.builder("com.emamagic.navigator", navigatorClass.build())
                 .build();
 
         try {
             javaFile.writeTo(processingEnv.getFiler());
-        }  catch (IOException ignored) {
-            // leave it like this due to rewrite Navigator
+        } catch (IOException ignored) {
+            // Handle exception appropriately, if desired
         }
     }
 

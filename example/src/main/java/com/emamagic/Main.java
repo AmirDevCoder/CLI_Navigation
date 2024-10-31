@@ -1,8 +1,9 @@
 package com.emamagic;
 
+import com.emamagic.navigator.Navigator;
+
 public class Main {
     public static void main(String[] args) {
-        HomePage homePage = new HomePage();
-        homePage.display();
+        Navigator.navToHomePage();
     }
 }
