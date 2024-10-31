@@ -40,7 +40,6 @@ Navigator is a Java library for navigating between annotated classes within a pr
    5. Click the **+** icon.
    6. Select **JARs or directories** option.
    
----
 
 ## Setup
 Define Navigation Interfaces and Annotations:
