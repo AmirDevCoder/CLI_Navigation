@@ -109,7 +109,7 @@ public class HomePage implements Navigable {
     }
 }
 
-@Page(name = "adminPage")
+@Page
 public class AdminPage implements Navigable {
     @Param
     private String adminName;
