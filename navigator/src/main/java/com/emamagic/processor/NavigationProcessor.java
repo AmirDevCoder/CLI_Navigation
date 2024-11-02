@@ -10,6 +10,7 @@ import com.squareup.javapoet.*;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -24,6 +25,7 @@ public class NavigationProcessor extends AbstractProcessor {
         Map<String, PageData> pageParamMap = new HashMap<>();
 
         for (Element element : roundEnv.getElementsAnnotatedWith(Page.class)) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, element.getSimpleName());
             if (element.getKind() == ElementKind.CLASS) {
                 TypeElement typeElement = (TypeElement) element;
                 String pageName = typeElement.getSimpleName().toString();

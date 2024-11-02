@@ -1,5 +1,8 @@
 package com.emamagic.util;
 
-public interface Navigable {
-    void display();
+import com.emamagic.annotation.Page;
+
+@Page
+public abstract class Navigable {
+    public abstract void display();
 }
