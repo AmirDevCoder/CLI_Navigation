@@ -1,11 +1,10 @@
 package com.emamagic.pages;
 
 import com.emamagic.model.Auth;
-import com.emamagic.util.Navigable;
-import com.emamagic.annotation.Page;
+import com.emamagic.util.AbstractNavigable;
 import com.emamagic.annotation.Param;
 
-public class HomePage extends Navigable {
+public class HomePage extends AbstractNavigable {
 
     @Param
     private String greeting;
